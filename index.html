@@ -221,10 +221,7 @@ export default function PharmacyPOS() {
   const finalizeSale = () => {
     if (cart.length === 0 || isPrinting) return;
     setIsPrinting(true);
-    // Let the receipt render before opening the print dialog.
     setTimeout(() => window.print(), 50);
-    // Safety net: if the browser never fires "afterprint" (e.g. printing
-    // was blocked), don't leave the button stuck disabled forever.
     setTimeout(() => setIsPrinting(false), 20000);
   };
 
@@ -415,7 +412,7 @@ export default function PharmacyPOS() {
 
         .payment-row { display: flex; gap: 8px; margin: 14px 0; }
         .pay-btn {
-          flex: 1; padding: 9px 0; border-radius: 9px; border: 1px solid var(--border);
+          flex: 1; padding: 9px 0; border-radius: 99px; border: 1px solid var(--border);
           background: var(--surface-2); color: var(--text-muted); font-family: inherit; font-size: 13px; cursor: pointer;
         }
         .pay-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -480,9 +477,17 @@ export default function PharmacyPOS() {
         }
 
         @media print {
-          body * { visibility: hidden; }
-          .receipt-print, .receipt-print * { visibility: visible; }
-          .receipt-print { display: block; position: fixed; top: 0; right: 0; width: 100%; padding: 24px; font-family: 'Tajawal', sans-serif; direction: rtl; color: #111; background: #fff; }
+          .no-print { display: none !important; }
+          .receipt-print {
+            display: block !important;
+            position: absolute;
+            top: 0; left: 0; width: 100%;
+            padding: 24px;
+            font-family: 'Tajawal', sans-serif;
+            direction: rtl;
+            color: #111;
+            background: #fff;
+          }
           .receipt-head { text-align: center; margin-bottom: 14px; }
           .receipt-head h2 { margin: 0 0 4px; font-size: 18px; }
           .receipt-head p { margin: 0; font-size: 12px; color: #444; }
@@ -490,8 +495,8 @@ export default function PharmacyPOS() {
           .receipt-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
           .receipt-table th { text-align: right; border-bottom: 1px solid #999; padding: 6px 4px; }
           .receipt-table td { padding: 6px 4px; border-bottom: 1px dotted #ccc; }
-          .receipt-totals { margin-top: 12px; font-size: 13px; }
-          .receipt-totals .grand { font-size: 16px; font-weight: 800; margin-top: 6px; }
+          .receipt-totals { margin-top: 12px; font-size: 13px; line-height: 1.6; }
+          .receipt-totals .grand { font-size: 16px; font-weight: 800; margin-top: 6px; border-top: 1px solid #111; padding-top: 4px; }
           .receipt-foot { text-align: center; margin-top: 20px; font-size: 11.5px; color: #666; }
         }
       `}</style>
@@ -651,13 +656,14 @@ export default function PharmacyPOS() {
 
           {flash && <div className={`flash-toast ${flash.type === "warn" ? "warn" : ""}`}>{flash.text}</div>}
 
+          {/* قسم الفاتورة المخصصة للطباعة */}
           <div className="receipt-print">
             <div className="receipt-head">
               <h2>{PHARMACY_NAME}</h2>
               <p>فاتورة بيع — نظام نقاط البيع</p>
             </div>
             <div className="receipt-meta">
-              <span>رقم الفاتورة: {invoiceNo}</span>
+              <span>رقم الفاتورة: #{invoiceNo}</span>
               <span>{dateStr} — {timeStr}</span>
             </div>
             <table className="receipt-table">
@@ -684,9 +690,12 @@ export default function PharmacyPOS() {
               <div>الإجمالي الفرعي: {formatEGP(subtotal)} ج.م</div>
               {discountPct > 0 && <div>الخصم ({discountPct}%): -{formatEGP(discountAmount)} ج.م</div>}
               <div>طريقة الدفع: {payment === "cash" ? "نقدي" : "بطاقة"}</div>
-              <div className="grand">الإجمالي النهائي: {formatEGP(total)} ج.م</div>
+              <div className="grand">المبلغ الإجمالي: {formatEGP(total)} ج.م</div>
             </div>
-            <div className="receipt-foot">شكراً لزيارتكم — نتمنى لكم دوام الصحة</div>
+            <div className="receipt-foot">
+              <p>شكراً لزيارتكم {PHARMACY_NAME}</p>
+              <p>نتمنى لكم الشفاء العاجل</p>
+            </div>
           </div>
         </>
       )}
