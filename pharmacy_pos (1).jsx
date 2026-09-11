@@ -1,0 +1,695 @@
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import {
+  Search, Plus, Minus, Trash2, Printer, ShoppingCart, X, Pill,
+  Eye, EyeOff, LogOut, Moon, Sun, Lock, User,
+} from "lucide-react";
+
+const INITIAL_PRODUCTS = [
+  { id: 1, name: "باراسيتامول 500", form: "أقراص", category: "مسكنات", price: 15, stock: 120 },
+  { id: 2, name: "كتافلام 50", form: "أقراص", category: "مسكنات", price: 28, stock: 4 },
+  { id: 3, name: "بروفين 400", form: "أقراص", category: "مسكنات", price: 22, stock: 60 },
+  { id: 4, name: "أوجمنتين 1 جم", form: "أقراص", category: "مضادات حيوية", price: 65, stock: 18 },
+  { id: 5, name: "أموكسيل 500", form: "كبسول", category: "مضادات حيوية", price: 32, stock: 3 },
+  { id: 6, name: "زيثروماكس 500", form: "أقراص", category: "مضادات حيوية", price: 78, stock: 25 },
+  { id: 7, name: "فيتامين سي 1000", form: "أقراص فوارة", category: "فيتامينات", price: 45, stock: 80 },
+  { id: 8, name: "فيروجلوبين", form: "شراب", category: "فيتامينات", price: 90, stock: 30 },
+  { id: 9, name: "أوميجا 3", form: "كبسول", category: "فيتامينات", price: 120, stock: 40 },
+  { id: 10, name: "أنتينال", form: "أقراص", category: "جهاز هضمي", price: 20, stock: 55 },
+  { id: 11, name: "سبازمو ديجستين", form: "أقراص", category: "جهاز هضمي", price: 33, stock: 5 },
+  { id: 12, name: "موتيليوم", form: "أقراص", category: "جهاز هضمي", price: 27, stock: 45 },
+  { id: 13, name: "زيرتك", form: "أقراص", category: "حساسية وبرد", price: 24, stock: 70 },
+  { id: 14, name: "كلاريتين", form: "شراب", category: "حساسية وبرد", price: 38, stock: 2 },
+  { id: 15, name: "ديكولجين", form: "أقراص", category: "حساسية وبرد", price: 18, stock: 90 },
+  { id: 16, name: "لانتوس", form: "حقن", category: "أدوية مزمنة", price: 850, stock: 6 },
+  { id: 17, name: "جلوكوفاج 500", form: "أقراص", category: "أدوية مزمنة", price: 42, stock: 65 },
+  { id: 18, name: "كونكور 5", form: "أقراص", category: "أدوية مزمنة", price: 55, stock: 38 },
+  { id: 19, name: "فولتارين جل", form: "جل", category: "موضعي", price: 48, stock: 27 },
+  { id: 20, name: "بيتادين", form: "محلول", category: "موضعي", price: 25, stock: 33 },
+];
+
+const CATEGORIES = ["الكل", ...Array.from(new Set(INITIAL_PRODUCTS.map((p) => p.category)))];
+const PHARMACY_NAME = "صيدلية عبدالرحمن";
+const DEMO_USER = "admin";
+const DEMO_PASS = "1234";
+
+function formatEGP(n) {
+  return n.toLocaleString("ar-EG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function ThemeToggle({ theme, onToggle, className }) {
+  return (
+    <button className={`theme-toggle ${className || ""}`} onClick={onToggle} title="تبديل الوضع الداكن/الفاتح">
+      {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
+    </button>
+  );
+}
+
+function LoginScreen({ theme, onToggleTheme, onLogin }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+
+  const submit = () => {
+    if (!username.trim() || !password.trim()) {
+      setError("من فضلك ادخل اسم المستخدم وكلمة المرور");
+      return;
+    }
+    if (username.trim() === DEMO_USER && password === DEMO_PASS) {
+      setError("");
+      onLogin(username.trim());
+    } else {
+      setError("اسم المستخدم أو كلمة المرور غير صحيحة");
+    }
+  };
+
+  return (
+    <div className="login-screen">
+      <ThemeToggle theme={theme} onToggle={onToggleTheme} className="login-theme-toggle" />
+      <div className="login-card">
+        <div className="login-brand">
+          <div className="icon-badge lg"><Pill size={26} color="#fff" /></div>
+          <h1>{PHARMACY_NAME}</h1>
+          <p>سجّل الدخول لبدء وردية البيع</p>
+        </div>
+
+        <div className="login-form">
+          <label className="field-label">اسم المستخدم</label>
+          <div className="input-wrap">
+            <User size={16} className="input-icon" />
+            <input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submit()}
+              placeholder="اسم المستخدم"
+              autoComplete="username"
+            />
+          </div>
+
+          <label className="field-label">كلمة المرور</label>
+          <div className="input-wrap">
+            <Lock size={16} className="input-icon" />
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submit()}
+              placeholder="كلمة المرور"
+              autoComplete="current-password"
+            />
+            <button type="button" className="input-suffix" onClick={() => setShowPassword((s) => !s)}>
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+
+          {error && <div className="login-error">{error}</div>}
+
+          <button type="button" className="btn-primary login-submit" onClick={submit}>تسجيل الدخول</button>
+        </div>
+
+        <p className="login-hint">بيانات تجريبية: admin / 1234</p>
+      </div>
+    </div>
+  );
+}
+
+export default function PharmacyPOS() {
+  const [theme, setTheme] = useState("light");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState("");
+
+  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [cart, setCart] = useState([]);
+  const [query, setQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("الكل");
+  const [discountPct, setDiscountPct] = useState(0);
+  const [payment, setPayment] = useState("cash");
+  const [invoiceNo, setInvoiceNo] = useState(1001);
+  const [salesToday, setSalesToday] = useState(0);
+  const [now, setNow] = useState(new Date());
+  const [flash, setFlash] = useState(null);
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    if (!flash) return;
+    const t = setTimeout(() => setFlash(null), 1400);
+    return () => clearTimeout(t);
+  }, [flash]);
+
+  const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const matchesCategory = activeCategory === "الكل" || p.category === activeCategory;
+      const matchesQuery = p.name.toLowerCase().includes(query.trim().toLowerCase());
+      return matchesCategory && matchesQuery;
+    });
+  }, [products, query, activeCategory]);
+
+  const cartQtyFor = (id) => cart.find((c) => c.id === id)?.qty || 0;
+
+  const addToCart = (product) => {
+    if (cartQtyFor(product.id) >= product.stock) {
+      setFlash({ type: "warn", text: "الكمية المتاحة في المخزون غير كافية" });
+      return;
+    }
+    setCart((prev) => {
+      const existing = prev.find((c) => c.id === product.id);
+      if (existing) {
+        return prev.map((c) => (c.id === product.id ? { ...c, qty: c.qty + 1 } : c));
+      }
+      return [...prev, { id: product.id, name: product.name, price: product.price, qty: 1, stock: product.stock }];
+    });
+  };
+
+  const changeQty = (id, delta) => {
+    setCart((prev) =>
+      prev
+        .map((c) => {
+          if (c.id !== id) return c;
+          const next = c.qty + delta;
+          const capped = Math.min(next, c.stock);
+          return { ...c, qty: capped };
+        })
+        .filter((c) => c.qty > 0)
+    );
+  };
+
+  const removeItem = (id) => setCart((prev) => prev.filter((c) => c.id !== id));
+  const clearCart = () => {
+    setCart([]);
+    setDiscountPct(0);
+  };
+
+  const subtotal = cart.reduce((sum, c) => sum + c.price * c.qty, 0);
+  const discountAmount = (subtotal * (Number(discountPct) || 0)) / 100;
+  const total = Math.max(0, subtotal - discountAmount);
+  const itemCount = cart.reduce((s, c) => s + c.qty, 0);
+
+  const [isPrinting, setIsPrinting] = useState(false);
+  const cartRef = useRef(cart);
+  useEffect(() => {
+    cartRef.current = cart;
+  }, [cart]);
+
+  useEffect(() => {
+    const handleAfterPrint = () => {
+      setIsPrinting((printing) => {
+        if (!printing) return printing;
+        setProducts((prev) =>
+          prev.map((p) => {
+            const sold = cartRef.current.find((c) => c.id === p.id);
+            return sold ? { ...p, stock: p.stock - sold.qty } : p;
+          })
+        );
+        setSalesToday((s) => s + 1);
+        setInvoiceNo((n) => n + 1);
+        setCart([]);
+        setDiscountPct(0);
+        setFlash({ type: "ok", text: "تم إتمام البيع بنجاح" });
+        return false;
+      });
+    };
+    window.addEventListener("afterprint", handleAfterPrint);
+    return () => window.removeEventListener("afterprint", handleAfterPrint);
+  }, []);
+
+  const finalizeSale = () => {
+    if (cart.length === 0 || isPrinting) return;
+    setIsPrinting(true);
+    // Let the receipt render before opening the print dialog.
+    setTimeout(() => window.print(), 50);
+    // Safety net: if the browser never fires "afterprint" (e.g. printing
+    // was blocked), don't leave the button stuck disabled forever.
+    setTimeout(() => setIsPrinting(false), 20000);
+  };
+
+  const handleLogin = (name) => {
+    setCurrentUser(name);
+    setIsLoggedIn(true);
+    setInvoiceNo(1001);
+    setSalesToday(0);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setCurrentUser("");
+    setCart([]);
+    setDiscountPct(0);
+  };
+
+  const dateStr = now.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
+  const timeStr = now.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
+
+  return (
+    <div className="pos-root" data-theme={theme} dir="rtl">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+
+        .pos-root {
+          font-family: 'Tajawal', 'Segoe UI', sans-serif;
+          min-height: 100vh;
+          box-sizing: border-box;
+          transition: background-color .2s ease, color .2s ease;
+        }
+        .pos-root *, .pos-root *::before, .pos-root *::after { box-sizing: border-box; }
+
+        .pos-root[data-theme="light"] {
+          --bg: #F5FAF8;
+          --surface: #FFFFFF;
+          --surface-2: #EAF6F3;
+          --border: #DCEAE6;
+          --text: #15302B;
+          --text-muted: #4B6B64;
+          --header-bg: #0B3C3A;
+          --header-text: #FFFFFF;
+          --header-text-muted: #BFDAD5;
+          --accent: #0D7377;
+          --accent-hover: #128C8A;
+          --amber: #B8752F;
+          --amber-bg: #FBF0DF;
+          --red: #B8452F;
+          --red-bg: #FAEAE4;
+          --shadow: rgba(13,115,119,0.12);
+        }
+        .pos-root[data-theme="dark"] {
+          --bg: #0E1C1A;
+          --surface: #16302B;
+          --surface-2: #1C3B34;
+          --border: #274841;
+          --text: #EAF4F1;
+          --text-muted: #9FC3BB;
+          --header-bg: #081613;
+          --header-text: #EAF4F1;
+          --header-text-muted: #7FA89F;
+          --accent: #2FBBAC;
+          --accent-hover: #45CBBC;
+          --amber: #E0A458;
+          --amber-bg: #3A2E17;
+          --red: #E2745A;
+          --red-bg: #3A2019;
+          --shadow: rgba(0,0,0,0.4);
+        }
+
+        .pos-root { background: var(--bg); color: var(--text); }
+
+        .theme-toggle {
+          width: 36px; height: 36px; border-radius: 9px;
+          border: 1px solid var(--border); background: var(--surface);
+          color: var(--text); display: flex; align-items: center; justify-content: center;
+          cursor: pointer; transition: all .15s ease;
+        }
+        .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+        .pos-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 18px 28px; background: var(--header-bg); color: var(--header-text);
+        }
+        .pos-header-brand { display: flex; align-items: center; gap: 12px; }
+        .icon-badge {
+          width: 40px; height: 40px; border-radius: 10px; background: var(--accent);
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .icon-badge.lg { width: 56px; height: 56px; border-radius: 14px; margin: 0 auto 10px; }
+        .pos-header-brand h1 { font-size: 20px; font-weight: 800; margin: 0; }
+        .pos-header-brand p { margin: 0; font-size: 12.5px; color: var(--header-text-muted); }
+        .pos-header-right { display: flex; align-items: center; gap: 16px; }
+        .pos-header-meta { text-align: left; font-size: 13px; color: var(--header-text-muted); line-height: 1.7; }
+        .pos-header-meta b { color: var(--header-text); font-weight: 700; }
+        .user-chip {
+          display: flex; align-items: center; gap: 8px; font-size: 13px;
+          color: var(--header-text); background: rgba(255,255,255,0.08);
+          padding: 6px 12px; border-radius: 999px;
+        }
+        .logout-btn {
+          display: flex; align-items: center; gap: 6px; background: transparent;
+          border: 1px solid rgba(255,255,255,0.25); color: var(--header-text);
+          padding: 7px 12px; border-radius: 8px; font-family: inherit; font-size: 12.5px; cursor: pointer;
+        }
+        .logout-btn:hover { background: rgba(255,255,255,0.1); }
+
+        .pos-body { display: flex; gap: 20px; padding: 20px 28px 28px; align-items: flex-start; }
+        .pos-main { flex: 1 1 auto; min-width: 0; }
+        .pos-cart { width: 380px; flex: 0 0 380px; position: sticky; top: 20px; }
+
+        .search-row { display: flex; gap: 10px; margin-bottom: 14px; }
+        .search-box {
+          flex: 1; display: flex; align-items: center; gap: 10px;
+          background: var(--surface); border: 1px solid var(--border);
+          border-radius: 10px; padding: 11px 14px;
+        }
+        .search-box input {
+          border: none; outline: none; background: transparent;
+          font-family: inherit; font-size: 14.5px; width: 100%; color: var(--text);
+        }
+        .search-box input::placeholder { color: var(--text-muted); }
+
+        .cat-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+        .cat-chip {
+          border: 1px solid var(--border); background: var(--surface);
+          color: var(--text-muted); padding: 7px 14px; border-radius: 999px;
+          font-family: inherit; font-size: 13px; cursor: pointer; transition: all .15s ease;
+        }
+        .cat-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .cat-chip:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 12px; }
+        .product-card {
+          background: var(--surface); border: 1px solid var(--border);
+          border-radius: 12px; padding: 14px; cursor: pointer;
+          transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+          text-align: right; display: flex; flex-direction: column; gap: 6px;
+        }
+        .product-card:hover { box-shadow: 0 4px 14px var(--shadow); border-color: var(--accent); transform: translateY(-1px); }
+        .product-card.disabled { opacity: 0.5; cursor: not-allowed; }
+        .product-card.disabled:hover { box-shadow: none; transform: none; border-color: var(--border); }
+        .product-form { font-size: 11.5px; color: var(--text-muted); }
+        .product-name { font-size: 14.5px; font-weight: 700; line-height: 1.35; min-height: 38px; }
+        .product-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+        .product-price { font-size: 16px; font-weight: 800; color: var(--accent); }
+        .stock-tag { font-size: 11px; color: var(--text-muted); }
+        .stock-tag.low { color: var(--amber); font-weight: 700; }
+        .stock-tag.out { color: var(--red); font-weight: 700; }
+        .empty-state { padding: 60px 20px; text-align: center; color: var(--text-muted); }
+
+        .cart-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+        .cart-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--border); }
+        .cart-panel-head h2 { font-size: 15.5px; margin: 0; display: flex; align-items: center; gap: 8px; }
+        .invoice-tag { font-size: 12px; color: var(--text-muted); background: var(--surface-2); padding: 4px 10px; border-radius: 999px; }
+
+        .cart-list { max-height: 320px; overflow-y: auto; padding: 6px 12px; }
+        .cart-empty { padding: 40px 10px; text-align: center; color: var(--text-muted); font-size: 13.5px; }
+        .cart-item { display: flex; align-items: center; gap: 10px; padding: 10px 6px; border-bottom: 1px dashed var(--border); }
+        .cart-item:last-child { border-bottom: none; }
+        .cart-item-info { flex: 1; min-width: 0; }
+        .cart-item-name { font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cart-item-price { font-size: 12px; color: var(--text-muted); }
+        .qty-control { display: flex; align-items: center; gap: 6px; }
+        .qty-btn {
+          width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
+          background: var(--surface-2); display: flex; align-items: center; justify-content: center;
+          cursor: pointer; color: var(--accent);
+        }
+        .qty-btn:hover { filter: brightness(0.95); }
+        .qty-val { width: 20px; text-align: center; font-size: 13.5px; font-weight: 700; }
+        .line-total { width: 62px; text-align: left; font-size: 13.5px; font-weight: 700; }
+        .remove-btn { border: none; background: none; color: var(--red); cursor: pointer; padding: 4px; display: flex; }
+        .remove-btn:hover { opacity: 0.7; }
+
+        .cart-summary { padding: 14px 18px 18px; border-top: 1px solid var(--border); }
+        .summary-row { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--text-muted); margin-bottom: 8px; }
+        .discount-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .discount-row label { font-size: 13.5px; color: var(--text-muted); }
+        .discount-input-wrap { display: flex; align-items: center; gap: 4px; }
+        .discount-input-wrap input {
+          width: 52px; padding: 5px 7px; border: 1px solid var(--border); border-radius: 7px;
+          font-family: inherit; text-align: center; font-size: 13px; background: var(--surface); color: var(--text);
+        }
+        .total-row { display: flex; justify-content: space-between; align-items: baseline; padding-top: 10px; border-top: 1px solid var(--border); margin-top: 4px; }
+        .total-row .label { font-size: 14px; font-weight: 700; }
+        .total-row .value { font-size: 24px; font-weight: 800; color: var(--accent); }
+
+        .payment-row { display: flex; gap: 8px; margin: 14px 0; }
+        .pay-btn {
+          flex: 1; padding: 9px 0; border-radius: 9px; border: 1px solid var(--border);
+          background: var(--surface-2); color: var(--text-muted); font-family: inherit; font-size: 13px; cursor: pointer;
+        }
+        .pay-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        .action-row { display: flex; gap: 8px; }
+        .btn-primary {
+          flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+          background: var(--accent); color: #fff; border: none; border-radius: 10px;
+          padding: 12px 0; font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer;
+        }
+        .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+        .btn-ghost {
+          background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+          border-radius: 10px; padding: 12px 14px; cursor: pointer;
+        }
+        .btn-ghost:hover { border-color: var(--red); color: var(--red); }
+
+        .flash-toast {
+          position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+          background: var(--header-bg); color: var(--header-text); padding: 10px 20px;
+          border-radius: 999px; font-size: 13.5px; z-index: 50; box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        .flash-toast.warn { background: var(--red); }
+
+        /* Login screen */
+        .login-screen {
+          min-height: 100vh; display: flex; align-items: center; justify-content: center;
+          background: var(--bg); position: relative; padding: 20px;
+        }
+        .login-theme-toggle { position: absolute; top: 22px; left: 22px; }
+        .login-card {
+          width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--border);
+          border-radius: 16px; padding: 32px 28px; box-shadow: 0 10px 30px var(--shadow);
+        }
+        .login-brand { text-align: center; margin-bottom: 24px; }
+        .login-brand h1 { font-size: 19px; font-weight: 800; margin: 0 0 4px; }
+        .login-brand p { font-size: 13px; color: var(--text-muted); margin: 0; }
+        .field-label { display: block; font-size: 12.5px; color: var(--text-muted); margin: 0 0 6px; }
+        .input-wrap {
+          display: flex; align-items: center; gap: 8px; background: var(--bg);
+          border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 16px;
+        }
+        .input-icon { color: var(--text-muted); flex-shrink: 0; }
+        .input-wrap input {
+          border: none; outline: none; background: transparent; font-family: inherit;
+          font-size: 14px; width: 100%; color: var(--text);
+        }
+        .input-suffix { border: none; background: none; color: var(--text-muted); cursor: pointer; display: flex; padding: 0; }
+        .login-error {
+          background: var(--red-bg); color: var(--red); font-size: 12.5px;
+          padding: 8px 12px; border-radius: 8px; margin-bottom: 14px;
+        }
+        .login-submit { width: 100%; padding: 12px 0; }
+        .login-hint { text-align: center; font-size: 11.5px; color: var(--text-muted); margin: 16px 0 0; }
+
+        .receipt-print { display: none; }
+
+        @media (max-width: 860px) {
+          .pos-body { flex-direction: column; }
+          .pos-cart { width: 100%; flex-basis: auto; position: static; }
+        }
+
+        @media print {
+          body * { visibility: hidden; }
+          .receipt-print, .receipt-print * { visibility: visible; }
+          .receipt-print { display: block; position: fixed; top: 0; right: 0; width: 100%; padding: 24px; font-family: 'Tajawal', sans-serif; direction: rtl; color: #111; background: #fff; }
+          .receipt-head { text-align: center; margin-bottom: 14px; }
+          .receipt-head h2 { margin: 0 0 4px; font-size: 18px; }
+          .receipt-head p { margin: 0; font-size: 12px; color: #444; }
+          .receipt-meta { display: flex; justify-content: space-between; font-size: 12px; margin: 12px 0; border-top: 1px dashed #999; border-bottom: 1px dashed #999; padding: 8px 0; }
+          .receipt-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+          .receipt-table th { text-align: right; border-bottom: 1px solid #999; padding: 6px 4px; }
+          .receipt-table td { padding: 6px 4px; border-bottom: 1px dotted #ccc; }
+          .receipt-totals { margin-top: 12px; font-size: 13px; }
+          .receipt-totals .grand { font-size: 16px; font-weight: 800; margin-top: 6px; }
+          .receipt-foot { text-align: center; margin-top: 20px; font-size: 11.5px; color: #666; }
+        }
+      `}</style>
+
+      {!isLoggedIn ? (
+        <LoginScreen theme={theme} onToggleTheme={toggleTheme} onLogin={handleLogin} />
+      ) : (
+        <>
+          <header className="pos-header no-print">
+            <div className="pos-header-brand">
+              <div className="icon-badge"><Pill size={20} color="#fff" /></div>
+              <div>
+                <h1>{PHARMACY_NAME}</h1>
+                <p>نظام نقاط البيع السريع</p>
+              </div>
+            </div>
+            <div className="pos-header-right">
+              <div className="pos-header-meta">
+                <div>{dateStr} — <b>{timeStr}</b></div>
+                <div>عدد فواتير اليوم: <b>{salesToday}</b></div>
+              </div>
+              <div className="user-chip"><User size={14} /> {currentUser}</div>
+              <ThemeToggle theme={theme} onToggle={toggleTheme} />
+              <button className="logout-btn" onClick={handleLogout}>
+                <LogOut size={14} /> خروج
+              </button>
+            </div>
+          </header>
+
+          <div className="pos-body no-print">
+            <main className="pos-main">
+              <div className="search-row">
+                <div className="search-box">
+                  <Search size={17} />
+                  <input
+                    placeholder="ابحث باسم الدواء..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="cat-row">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    className={`cat-chip ${activeCategory === cat ? "active" : ""}`}
+                    onClick={() => setActiveCategory(cat)}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              {filteredProducts.length === 0 ? (
+                <div className="empty-state">لا يوجد أدوية مطابقة للبحث</div>
+              ) : (
+                <div className="product-grid">
+                  {filteredProducts.map((p) => {
+                    const remaining = p.stock - cartQtyFor(p.id);
+                    const isOut = remaining <= 0;
+                    return (
+                      <div
+                        key={p.id}
+                        className={`product-card ${isOut ? "disabled" : ""}`}
+                        onClick={() => !isOut && addToCart(p)}
+                      >
+                        <div className="product-form">{p.form} · {p.category}</div>
+                        <div className="product-name">{p.name}</div>
+                        <div className="product-footer">
+                          <span className="product-price">{formatEGP(p.price)} ج.م</span>
+                          <span className={`stock-tag ${isOut ? "out" : remaining < 5 ? "low" : ""}`}>
+                            {isOut ? "غير متوفر" : `متاح: ${remaining}`}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </main>
+
+            <aside className="pos-cart">
+              <div className="cart-panel">
+                <div className="cart-panel-head">
+                  <h2><ShoppingCart size={17} /> الفاتورة الحالية</h2>
+                  <span className="invoice-tag">#{invoiceNo}</span>
+                </div>
+
+                <div className="cart-list">
+                  {cart.length === 0 ? (
+                    <div className="cart-empty">اضغط على أي دواء لإضافته للفاتورة</div>
+                  ) : (
+                    cart.map((c) => (
+                      <div className="cart-item" key={c.id}>
+                        <div className="cart-item-info">
+                          <div className="cart-item-name">{c.name}</div>
+                          <div className="cart-item-price">{formatEGP(c.price)} ج.م × {c.qty}</div>
+                        </div>
+                        <div className="qty-control">
+                          <button className="qty-btn" onClick={() => changeQty(c.id, -1)}><Minus size={13} /></button>
+                          <span className="qty-val">{c.qty}</span>
+                          <button className="qty-btn" onClick={() => changeQty(c.id, 1)}><Plus size={13} /></button>
+                        </div>
+                        <div className="line-total">{formatEGP(c.price * c.qty)}</div>
+                        <button className="remove-btn" onClick={() => removeItem(c.id)}><X size={15} /></button>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="cart-summary">
+                  <div className="summary-row">
+                    <span>عدد الأصناف</span>
+                    <span>{itemCount}</span>
+                  </div>
+                  <div className="summary-row">
+                    <span>الإجمالي الفرعي</span>
+                    <span>{formatEGP(subtotal)} ج.م</span>
+                  </div>
+                  <div className="discount-row">
+                    <label>الخصم</label>
+                    <div className="discount-input-wrap">
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={discountPct}
+                        onChange={(e) => setDiscountPct(Math.min(100, Math.max(0, Number(e.target.value))))}
+                      />
+                      <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>%</span>
+                    </div>
+                  </div>
+
+                  <div className="payment-row">
+                    <button className={`pay-btn ${payment === "cash" ? "active" : ""}`} onClick={() => setPayment("cash")}>نقدي</button>
+                    <button className={`pay-btn ${payment === "card" ? "active" : ""}`} onClick={() => setPayment("card")}>بطاقة</button>
+                  </div>
+
+                  <div className="total-row">
+                    <span className="label">الإجمالي</span>
+                    <span className="value">{formatEGP(total)} ج.م</span>
+                  </div>
+
+                  <div className="action-row" style={{ marginTop: 14 }}>
+                    <button className="btn-primary" disabled={cart.length === 0 || isPrinting} onClick={finalizeSale}>
+                      <Printer size={16} /> {isPrinting ? "جاري فتح الطباعة..." : "إتمام البيع وطباعة الفاتورة"}
+                    </button>
+                    <button className="btn-ghost" onClick={clearCart} title="إفراغ الفاتورة">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          {flash && <div className={`flash-toast ${flash.type === "warn" ? "warn" : ""}`}>{flash.text}</div>}
+
+          <div className="receipt-print">
+            <div className="receipt-head">
+              <h2>{PHARMACY_NAME}</h2>
+              <p>فاتورة بيع — نظام نقاط البيع</p>
+            </div>
+            <div className="receipt-meta">
+              <span>رقم الفاتورة: {invoiceNo}</span>
+              <span>{dateStr} — {timeStr}</span>
+            </div>
+            <table className="receipt-table">
+              <thead>
+                <tr>
+                  <th>الصنف</th>
+                  <th>الكمية</th>
+                  <th>السعر</th>
+                  <th>الإجمالي</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cart.map((c) => (
+                  <tr key={c.id}>
+                    <td>{c.name}</td>
+                    <td>{c.qty}</td>
+                    <td>{formatEGP(c.price)}</td>
+                    <td>{formatEGP(c.price * c.qty)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="receipt-totals">
+              <div>الإجمالي الفرعي: {formatEGP(subtotal)} ج.م</div>
+              {discountPct > 0 && <div>الخصم ({discountPct}%): -{formatEGP(discountAmount)} ج.م</div>}
+              <div>طريقة الدفع: {payment === "cash" ? "نقدي" : "بطاقة"}</div>
+              <div className="grand">الإجمالي النهائي: {formatEGP(total)} ج.م</div>
+            </div>
+            <div className="receipt-foot">شكراً لزيارتكم — نتمنى لكم دوام الصحة</div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
