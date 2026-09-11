@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام كاشير الصيدلية</title>
+    <title>نظام كاشير وطباعة فواتير الصيدلية</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -12,25 +12,64 @@
             font-family: 'Cairo', sans-serif;
             background-color: #f3f4f6;
         }
+
+        /* -------------------------------------------------------------
+           PRINT STYLES (Supports A4 Invoice & 80mm Thermal Receipt)
+        ------------------------------------------------------------- */
         @media print {
             body * {
                 visibility: hidden;
             }
-            #printable-receipt, #printable-receipt * {
+            .no-print {
+                display: none !important;
+            }
+
+            /* Enable printable document wrapper */
+            #printable-area, #printable-area * {
                 visibility: visible;
             }
-            #printable-receipt {
+            #printable-area {
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 80mm; /* standard thermal receipt width */
-                padding: 10px;
-                font-size: 12px;
-                color: #000;
+                width: 100%;
                 background: #fff;
+                color: #000;
             }
-            .no-print {
-                display: none !important;
+
+            /* --- Thermal Receipt Style (80mm) --- */
+            body.print-mode-80mm #printable-area {
+                width: 80mm;
+                padding: 6px;
+                font-size: 11px;
+            }
+            body.print-mode-80mm .receipt-header-title {
+                font-size: 15px;
+                font-weight: 800;
+            }
+            body.print-mode-80mm table {
+                font-size: 11px;
+            }
+            body.print-mode-80mm th, body.print-mode-80mm td {
+                padding: 4px 2px !important;
+            }
+
+            /* --- Standard A4 Document Style --- */
+            body.print-mode-a4 #printable-area {
+                width: 210mm;
+                min-height: 297mm;
+                padding: 15mm;
+                font-size: 13px;
+            }
+            body.print-mode-a4 .receipt-header-title {
+                font-size: 22px;
+                font-weight: 800;
+            }
+            body.print-mode-a4 table {
+                font-size: 13px;
+            }
+            body.print-mode-a4 th, body.print-mode-a4 td {
+                padding: 8px 6px !important;
             }
         }
     </style>
@@ -42,8 +81,8 @@
         <div class="flex items-center space-x-3 space-x-reverse">
             <div class="bg-white text-teal-700 p-2 rounded-lg font-black text-xl">💊</div>
             <div>
-                <h1 class="font-bold text-lg leading-tight">نظام كاشير الصيدلية الذكي</h1>
-                <p class="text-xs text-teal-200">إدارة المبيعات - طباعة الفواتير - بحث بالبدائل والشرائط</p>
+                <h1 class="font-bold text-lg leading-tight">نظام كاشير الصيدلية (A4 / 80mm)</h1>
+                <p class="text-xs text-teal-200">إدارة الفواتير والطباعة متعددة الأحجام</p>
             </div>
         </div>
         <div class="text-sm font-semibold bg-teal-800 px-4 py-1.5 rounded-full border border-teal-600">
@@ -54,9 +93,9 @@
     <!-- Main Content Area -->
     <div class="flex flex-1 overflow-hidden p-4 gap-4 no-print">
 
-        <!-- Left Column: Search & Medicine List (60% width) -->
+        <!-- Left Column: Search & Medicine Grid (60% width) -->
         <div class="w-7/12 flex flex-col gap-4">
-            <!-- Search & Filters -->
+            <!-- Search & Category Filter -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col gap-3">
                 <div class="relative">
                     <input type="text" id="search-input" placeholder="ابحث باسم الدواء، المادة الفعالة، أو امسح الباركود..." 
@@ -71,28 +110,25 @@
                 </div>
             </div>
 
-            <!-- Medicine Cards Grid -->
+            <!-- Medicine List -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex-1 overflow-y-auto">
                 <h2 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-1.5">
-                    <span>📦</span> الأدوية المتاحة في المخزن
+                    <span>📦</span> قائمة الأدوية بالمخزن
                 </h2>
                 <div id="medicine-grid" class="grid grid-cols-2 gap-3">
-                    <!-- Cards rendered by JS -->
+                    <!-- Medicine cards JS -->
                 </div>
             </div>
         </div>
 
-        <!-- Right Column: Current POS Cart & Invoice (40% width) -->
+        <!-- Right Column: Cart & Checkout (40% width) -->
         <div class="w-5/12 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
-            <!-- Cart Header -->
             <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                <h2 class="font-bold text-gray-800 flex items-center gap-2">
-                    🛒 فاتورة البيع الحالية
-                </h2>
+                <h2 class="font-bold text-gray-800 flex items-center gap-2">🛒 الفاتورة الحالية</h2>
                 <button onclick="clearCart()" class="text-xs text-red-600 hover:text-red-800 font-semibold underline">إلغاء الفاتورة</button>
             </div>
 
-            <!-- Cart Items Table -->
+            <!-- Cart Table -->
             <div class="flex-1 overflow-y-auto p-3">
                 <table class="w-full text-right text-xs">
                     <thead>
@@ -105,102 +141,107 @@
                         </tr>
                     </thead>
                     <tbody id="cart-table-body" class="divide-y divide-gray-100">
-                        <!-- Items rendered by JS -->
+                        <!-- JS items -->
                     </tbody>
                 </table>
                 <div id="empty-cart-msg" class="text-center py-12 text-gray-400">
                     <p class="text-4xl mb-2">🛍️</p>
-                    <p class="text-sm font-medium">الفاتورة فارغة، اضغط على الأدوية لإضافتها</p>
+                    <p class="text-sm font-medium">اضغط على الأدوية لإضافتها للفاتورة</p>
                 </div>
             </div>
 
-            <!-- Summary & Print Section -->
+            <!-- Total & Print Buttons -->
             <div class="p-4 bg-gray-50 border-t border-gray-200 flex flex-col gap-3">
-                <div class="space-y-1 text-sm font-semibold text-gray-700">
-                    <div class="flex justify-between">
-                        <span>إجمالي الفاتورة:</span>
-                        <span id="total-price" class="text-lg font-extrabold text-teal-700">0.00 ج.م</span>
-                    </div>
+                <div class="flex justify-between items-center font-bold text-gray-800">
+                    <span>إجمالي المبلغ:</span>
+                    <span id="total-price" class="text-xl text-teal-700">0.00 ج.م</span>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 mt-2">
-                    <button onclick="processCheckout('cash')" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-xl text-center shadow-sm flex items-center justify-center gap-2 transition">
-                        🖨️ حفظ وطباعة
-                    </button>
-                    <button onclick="processCheckout('visa')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-center shadow-sm flex items-center justify-center gap-2 transition">
-                        💳 دفع إلكتروني
-                    </button>
+                <div class="flex flex-col gap-2 mt-1">
+                    <span class="text-xs font-bold text-gray-500">اختر نوع وحجم الطابعة:</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="processCheckout('80mm')" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition">
+                            🖨️ طباعة إيصال (80mm)
+                        </button>
+                        <button onclick="processCheckout('a4')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm transition">
+                            📄 طباعة فاتورة (A4)
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <!-- Hidden Printable Receipt Template -->
-    <div id="printable-receipt" class="hidden">
-        <div style="text-align: center; margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 8px;">
-            <h2 style="font-size: 16px; font-weight: bold; margin: 0;">صيدلية الشفاء والرحمة</h2>
-            <p style="margin: 2px 0;">العنوان: الشارع الرئيسي - القاهرة</p>
-            <p style="margin: 2px 0;">هاتف: 01000000000</p>
-            <p style="margin: 4px 0 0 0; font-size: 10px;" id="receipt-date"></p>
+    <!-- Printable Invoice/Receipt Structure (Rendered in Table format for both A4 and 80mm) -->
+    <div id="printable-area" class="hidden">
+        <!-- Receipt Header -->
+        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 12px;">
+            <h1 class="receipt-header-title" style="margin: 0; color: #000;">صيدلية الشفاء والرحمة</h1>
+            <p style="margin: 3px 0 0 0; font-weight: bold;">العنوان: الشارع الرئيسي - القاهرة | هاتف: 01000000000</p>
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-weight: bold; font-size: 0.9em;">
+                <span>رقم الفاتورة: #<span id="receipt-invoice-no">1001</span></span>
+                <span>التاريخ: <span id="receipt-date"></span></span>
+            </div>
         </div>
 
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; text-align: right;">
+        <!-- Table Displaying Cart Items -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; text-align: right; border: 1px solid #000;">
             <thead>
-                <tr style="border-bottom: 1px solid #000;">
-                    <th style="padding: 3px 0;">الصنف</th>
-                    <th style="padding: 3px 0; text-align: center;">الوحدة</th>
-                    <th style="padding: 3px 0; text-align: center;">العدد</th>
-                    <th style="padding: 3px 0; text-align: left;">الإجمالي</th>
+                <tr style="background-color: #f0f0f0; border-bottom: 2px solid #000;">
+                    <th style="border: 1px solid #000; text-align: right;">م</th>
+                    <th style="border: 1px solid #000; text-align: right;">اسم الدواء / الصنف</th>
+                    <th style="border: 1px solid #000; text-align: center;">الوحدة</th>
+                    <th style="border: 1px solid #000; text-align: center;">الكمية</th>
+                    <th style="border: 1px solid #000; text-align: left;">سعر الوحدة</th>
+                    <th style="border: 1px solid #000; text-align: left;">الإجمالي</th>
                 </tr>
             </thead>
-            <tbody id="receipt-items">
-                <!-- Receipt Items JS -->
+            <tbody id="receipt-items-table">
+                <!-- Items populated dynamically -->
             </tbody>
         </table>
 
-        <div style="border-top: 1px dashed #000; padding-top: 8px; font-weight: bold;">
-            <div style="display: flex; justify-content: space-between; font-size: 14px;">
-                <span>الإجمالي الكلي:</span>
+        <!-- Invoice Summary Table / Box -->
+        <div style="width: 100%; border: 1px solid #000; padding: 10px; box-sizing: border-box; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 1.1em; margin-bottom: 4px;">
+                <span>المبلغ الإجمالي المطلق:</span>
                 <span id="receipt-total">0.00 ج.م</span>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-top: 4px;">
-                <span>طريقة الدفع:</span>
-                <span id="receipt-payment-method">نقداً</span>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: #333;">
+                <span>طريقة الدفع: <strong id="receipt-payment-mode">نقداً</strong></span>
+                <span>عدد الأصناف: <strong id="receipt-items-count">0</strong></span>
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: 15px; font-size: 10px; border-top: 1px solid #eee; padding-top: 5px;">
-            <p style="margin: 2px 0;">نتمنى لكم دوام الصحة والعافية ❤️</p>
-            <p style="margin: 2px 0;">يرجى الاحتفاظ بالفاتورة عند الاستبدال</p>
+        <!-- Footer -->
+        <div style="text-align: center; border-top: 1px dashed #000; padding-top: 8px; font-size: 0.85em;">
+            <p style="margin: 2px 0; font-weight: bold;">مع تمنياتنا لكم بالشفاء العاجل ❤️</p>
+            <p style="margin: 0;">يرجى إحضار هذا الإيصال عند المراجعة أو الاستبدال خلال 14 يوم</p>
         </div>
     </div>
 
-    <!-- JavaScript Logic -->
+    <!-- Logic JavaScript -->
     <script>
-        // Sample Inventory Data (Pharmacies data structure with strips, active ingredients)
         const inventory = [
-            { id: 101, name: "بنادول إكسترا", active: "باراسيتامول + كافيين", category: "مسكنات", boxPrice: 45, stripPrice: 15, stripsPerBox: 3, barcode: "6221001", expiry: "2027-05" },
-            { id: 102, name: "أوجمنتين 1 جرام", active: "أموكسيسيلين + كلافولانيك", category: "مضادات حيوية", boxPrice: 110, stripPrice: 55, stripsPerBox: 2, barcode: "6221002", expiry: "2026-11" },
-            { id: 103, name: "كتفلام 50 مجم", active: "ديكلوفيناك โพแทสเซียม", category: "مسكنات", boxPrice: 60, stripPrice: 20, stripsPerBox: 3, barcode: "6221003", expiry: "2027-01" },
-            { id: 104, name: "سنتروم مع لوتين", active: "فيتامينات متعددة", category: "فيتامينات", boxPrice: 320, stripPrice: 107, stripsPerBox: 3, barcode: "6221004", expiry: "2028-03" },
-            { id: 105, name: "كونجستال أقراص", active: "باراسيتامول + كلورفينيرامين", category: "مسكنات", boxPrice: 36, stripPrice: 12, stripsPerBox: 3, barcode: "6221005", expiry: "2026-12" },
-            { id: 106, name: "بروفين 400 مجم", active: "إيبوبروفين", category: "مسكنات", boxPrice: 50, stripPrice: 16.5, stripsPerBox: 3, barcode: "6221006", expiry: "2027-08" }
+            { id: 101, name: "بنادول إكسترا", active: "باراسيتامول + كافيين", category: "مسكنات", boxPrice: 45, stripPrice: 15, barcode: "6221001", expiry: "2027-05" },
+            { id: 102, name: "أوجمنتين 1 جرام", active: "أموكسيسيلين + كلافولانيك", category: "مضادات حيوية", boxPrice: 110, stripPrice: 55, barcode: "6221002", expiry: "2026-11" },
+            { id: 103, name: "كتفلام 50 مجم", active: "ديكلوفيناك پتاسيوم", category: "مسكنات", boxPrice: 60, stripPrice: 20, barcode: "6221003", expiry: "2027-01" },
+            { id: 104, name: "سنتروم مع لوتين", active: "فيتامينات متعددة", category: "فيتامينات", boxPrice: 320, stripPrice: 107, barcode: "6221004", expiry: "2028-03" },
+            { id: 105, name: "كونجستال أقراص", active: "باراسيتامول + كلورفينيرامين", category: "مسكنات", boxPrice: 36, stripPrice: 12, barcode: "6221005", expiry: "2026-12" },
+            { id: 106, name: "بروفين 400 مجم", active: "إيبوبروفين", category: "مسكنات", boxPrice: 50, stripPrice: 16.5, barcode: "6221006", expiry: "2027-08" }
         ];
 
         let cart = [];
         let selectedCategory = 'all';
 
-        // Initialize App
         document.addEventListener('DOMContentLoaded', () => {
             renderInventory();
             updateTime();
             setInterval(updateTime, 1000);
 
-            // Search input listener
             document.getElementById('search-input').addEventListener('input', (e) => {
-                const query = e.target.value.trim().toLowerCase();
-                renderInventory(query);
+                renderInventory(e.target.value.trim().toLowerCase());
             });
         });
 
@@ -211,7 +252,6 @@
             });
         }
 
-        // Render Inventory Grid
         function renderInventory(query = '') {
             const grid = document.getElementById('medicine-grid');
             grid.innerHTML = '';
@@ -225,7 +265,7 @@
             });
 
             if (filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-2 text-center py-8 text-gray-400">لا توجد أدوية مطابقة للبحث</div>`;
+                grid.innerHTML = `<div class="col-span-2 text-center py-8 text-gray-400">لا توجد أدوية مطابقة</div>`;
                 return;
             }
 
@@ -241,13 +281,12 @@
                         <p class="text-xs text-gray-500 mt-0.5">المادة: ${item.active}</p>
                         <p class="text-[11px] text-gray-400 mt-0.5">صلاحية: ${item.expiry}</p>
                     </div>
-
-                    <div class="mt-3 pt-2 border-t border-gray-200 flex items-center justify-between gap-1">
-                        <button onclick="addToCart(${item.id}, 'box')" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold py-1.5 px-2 rounded flex flex-col items-center">
+                    <div class="mt-3 pt-2 border-t border-gray-200 flex gap-1">
+                        <button onclick="addToCart(${item.id}, 'box')" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold py-1.5 rounded flex flex-col items-center">
                             <span>علبة</span>
                             <span class="text-[10px] opacity-90">${item.boxPrice} ج.م</span>
                         </button>
-                        <button onclick="addToCart(${item.id}, 'strip')" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-1.5 px-2 rounded flex flex-col items-center">
+                        <button onclick="addToCart(${item.id}, 'strip')" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-1.5 rounded flex flex-col items-center">
                             <span>شريط</span>
                             <span class="text-[10px] opacity-90">${item.stripPrice} ج.م</span>
                         </button>
@@ -266,12 +305,11 @@
             renderInventory(document.getElementById('search-input').value.trim().toLowerCase());
         }
 
-        // Add Item to Cart
-        function addToCart(medicineId, unit) {
-            const med = inventory.find(i => i.id === medicineId);
+        function addToCart(id, unit) {
+            const med = inventory.find(i => i.id === id);
             if (!med) return;
 
-            const existingIndex = cart.findIndex(item => item.id === medicineId && item.unit === unit);
+            const existingIndex = cart.findIndex(item => item.id === id && item.unit === unit);
             const unitPrice = unit === 'box' ? med.boxPrice : med.stripPrice;
             const unitLabel = unit === 'box' ? 'علبة' : 'شريط';
 
@@ -291,7 +329,6 @@
             renderCart();
         }
 
-        // Render Cart Table
         function renderCart() {
             const tbody = document.getElementById('cart-table-body');
             const emptyMsg = document.getElementById('empty-cart-msg');
@@ -314,19 +351,17 @@
                 tr.className = 'border-b border-gray-100';
                 tr.innerHTML = `
                     <td class="py-2.5 font-bold text-gray-800">${item.name}</td>
-                    <td class="py-2.5 text-center">
-                        <span class="px-1.5 py-0.5 rounded text-[10px] ${item.unit === 'box' ? 'bg-teal-100 text-teal-800' : 'bg-amber-100 text-amber-800'}">${item.unitLabel}</span>
-                    </td>
+                    <td class="py-2.5 text-center"><span class="px-1.5 py-0.5 rounded text-[10px] ${item.unit === 'box' ? 'bg-teal-100 text-teal-800' : 'bg-amber-100 text-amber-800'}">${item.unitLabel}</span></td>
                     <td class="py-2.5 text-center">
                         <div class="flex items-center justify-center gap-1">
-                            <button onclick="updateQty(${index}, -1)" class="w-5 h-5 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 font-bold flex items-center justify-center text-xs">-</button>
-                            <span class="w-6 text-center font-bold">${item.qty}</span>
-                            <button onclick="updateQty(${index}, 1)" class="w-5 h-5 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 font-bold flex items-center justify-center text-xs">+</button>
+                            <button onclick="updateQty(${index}, -1)" class="w-5 h-5 bg-gray-200 text-gray-700 rounded font-bold text-xs">-</button>
+                            <span class="w-5 text-center font-bold">${item.qty}</span>
+                            <button onclick="updateQty(${index}, 1)" class="w-5 h-5 bg-gray-200 text-gray-700 rounded font-bold text-xs">+</button>
                         </div>
                     </td>
                     <td class="py-2.5 text-left font-bold text-gray-700">${itemTotal.toFixed(2)}</td>
                     <td class="py-2.5 text-center">
-                        <button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-700 font-bold">✕</button>
+                        <button onclick="removeFromCart(${index})" class="text-red-500 font-bold">✕</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -337,9 +372,7 @@
 
         function updateQty(index, change) {
             cart[index].qty += change;
-            if (cart[index].qty <= 0) {
-                cart.splice(index, 1);
-            }
+            if (cart[index].qty <= 0) cart.splice(index, 1);
             renderCart();
         }
 
@@ -353,39 +386,47 @@
             renderCart();
         }
 
-        // Process Checkout & Print
-        function processCheckout(method) {
+        // Process Checkout with layout mode (80mm or A4)
+        function processCheckout(mode) {
             if (cart.length === 0) {
                 alert('الرجاء إضافة أدوية للفاتورة أولاً!');
                 return;
             }
 
-            // Fill Printable Receipt Template
-            const receiptItemsBody = document.getElementById('receipt-items');
-            receiptItemsBody.innerHTML = '';
-            let total = 0;
+            // Set printer mode class on body for CSS @media print
+            document.body.classList.remove('print-mode-80mm', 'print-mode-a4');
+            document.body.classList.add(mode === 'a4' ? 'print-mode-a4' : 'print-mode-80mm');
 
-            cart.forEach(item => {
-                const itemTotal = item.price * item.qty;
-                total += itemTotal;
+            // Render Table Rows for Receipt Print
+            const tableBody = document.getElementById('receipt-items-table');
+            tableBody.innerHTML = '';
+            let grandTotal = 0;
+
+            cart.forEach((item, idx) => {
+                const total = item.price * item.qty;
+                grandTotal += total;
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td style="padding: 3px 0;">${item.name}</td>
-                    <td style="padding: 3px 0; text-align: center;">${item.unitLabel}</td>
-                    <td style="padding: 3px 0; text-align: center;">${item.qty}</td>
-                    <td style="padding: 3px 0; text-align: left;">${itemTotal.toFixed(2)}</td>
+                    <td style="border: 1px solid #000; text-align: center; font-weight: bold;">${idx + 1}</td>
+                    <td style="border: 1px solid #000; font-weight: bold;">${item.name}</td>
+                    <td style="border: 1px solid #000; text-align: center;">${item.unitLabel}</td>
+                    <td style="border: 1px solid #000; text-align: center; font-weight: bold;">${item.qty}</td>
+                    <td style="border: 1px solid #000; text-align: left;">${item.price.toFixed(2)}</td>
+                    <td style="border: 1px solid #000; text-align: left; font-weight: bold;">${total.toFixed(2)}</td>
                 `;
-                receiptItemsBody.appendChild(tr);
+                tableBody.appendChild(tr);
             });
 
-            document.getElementById('receipt-total').innerText = total.toFixed(2) + ' ج.م';
-            document.getElementById('receipt-payment-method').innerText = method === 'cash' ? 'نقداً (كاش)' : 'دفع إلكتروني (فيزا)';
+            // Set Info Header & Footer Summary
+            document.getElementById('receipt-invoice-no').innerText = Math.floor(1000 + Math.random() * 9000);
             document.getElementById('receipt-date').innerText = new Date().toLocaleString('ar-EG');
+            document.getElementById('receipt-total').innerText = grandTotal.toFixed(2) + ' ج.م';
+            document.getElementById('receipt-items-count').innerText = cart.length;
 
             // Trigger Browser Print Dialog
             window.print();
 
-            // Clear Cart after print
             setTimeout(() => {
                 clearCart();
             }, 1000);
