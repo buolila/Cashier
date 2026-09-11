@@ -24,26 +24,66 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
 
 /* إعدادات وتنسيق مساحة الطباعة */
 @media print{
+  @page { margin: 0; }
+  html, body{
+    margin:0!important;
+    padding:0!important;
+    background:#fff!important;
+  }
   body *{visibility:hidden!important}
-  .print-area, .print-area *{visibility:visible!important}
-  .print-area{position:absolute!important;left:0!important;top:0!important;width:100%!important;background:#fff!important;color:#000!important;padding:0!important;margin:0!important}
-  
-  /* فاتورة حرارية 80 مم */
-  body.print80 .print-area{width:80mm!important;max-width:80mm!important;padding:3mm!important;font-size:11px!important;line-height:1.2;font-family:'Cairo',sans-serif}
-  body.print80 .print-area h1{font-size:16px!important;font-weight:900!important;margin-bottom:2px!important}
-  body.print80 .print-area table{font-size:10px!important}
-  
-  /* طباعة A4 */
-  body.printA4 .print-area{width:210mm!important;min-height:297mm!important;padding:12mm!important;font-size:13px!important}
-  body.printA4 .print-area h1{font-size:24px!important;font-weight:900!important}
+  .print-area,.print-area *{visibility:visible!important}
+  .print-area{
+    display:block!important;
+    position:absolute!important;
+    top:0!important;
+    left:0!important;
+    margin:0!important;
+    background:#fff!important;
+    color:#000!important;
+    box-sizing:border-box!important;
+  }
+
+  /* طباعة حرارية: عرض الورقة نفسه، بدون صفحة A4 حول الفاتورة */
+  body.print80 .print-area{
+    width:80mm!important;
+    max-width:80mm!important;
+    padding:2.5mm!important;
+    font-size:9px!important;
+    line-height:1.15!important;
+    font-family:'Cairo',Arial,sans-serif!important;
+  }
+  body.print80 .print-area h1{
+    font-size:15px!important;
+    margin:0 0 2px!important;
+  }
+  body.print80 .print-area table{font-size:8.5px!important}
+  body.print80 .print-area th,
+  body.print80 .print-area td{padding:2px 1px!important}
+
+  /* A4: محتوى الفاتورة يملأ الصفحة من أعلى وبحجم مناسب */
+  body.printA4 .print-area{
+    width:210mm!important;
+    min-height:0!important;
+    padding:8mm!important;
+    font-size:12px!important;
+    line-height:1.3!important;
+    font-family:'Cairo',Arial,sans-serif!important;
+  }
+  body.printA4 .print-area h1{
+    font-size:22px!important;
+    margin:0 0 3px!important;
+  }
+  body.printA4 .print-area table{font-size:11px!important}
+  body.printA4 .print-area th,
+  body.printA4 .print-area td{padding:4px 3px!important}
 }
 </style>
 </head>
 <body class="min-h-screen">
 
 <!-- شاشة تسجيل الدخول -->
-<div id="loginScreen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4">
-  <div class="card w-full max-w-md p-6 bg-white rounded-3xl shadow-2xl">
+<div id="loginScreen" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4">
+  <div class="card w-full max-w-md p-6 md:p-7 bg-white rounded-3xl shadow-2xl">
     <div class="text-center mb-6">
       <div class="w-16 h-16 bg-teal-600 text-white rounded-2xl mx-auto grid place-items-center text-3xl mb-3 shadow-lg">⚕️</div>
       <h2 class="text-2xl font-black text-slate-800">صيدلية د. عبدالرحمن ابوليله</h2>
@@ -57,7 +97,7 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
       <div class="flex justify-between"><span>كلمة المرور:</span> <code class="bg-teal-100 px-2 py-0.5 rounded font-mono font-bold">1234</code></div>
     </div>
 
-    <form onsubmit="handleLogin(event)" class="space-y-4">
+    <form onsubmit="handleLogin(event)" autocomplete="on" class="space-y-4">
       <div>
         <label class="block text-xs font-bold text-slate-700 mb-1">اسم المستخدم</label>
         <input id="loginUser" type="text" required class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-teal-500" placeholder="أدخل اسم المستخدم">
@@ -167,6 +207,30 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
   </div>
 </div>
 
+<!-- معاينة الفاتورة -->
+<div id="invoicePreviewModal" class="hidden fixed inset-0 z-[110] modal-bg p-3 md:p-5 items-center justify-center">
+  <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[94vh] flex flex-col">
+    <div class="p-4 bg-slate-950 text-white flex items-center justify-between">
+      <div>
+        <h2 class="font-black">🧾 معاينة الفاتورة</h2>
+        <p class="text-[10px] text-slate-300 mt-1">راجع الفاتورة قبل الطباعة</p>
+      </div>
+      <button onclick="closeInvoicePreview()" class="btn w-9 h-9 rounded-xl bg-white/10 hover:bg-white/15">✕</button>
+    </div>
+
+    <div class="p-4 md:p-6 overflow-y-auto bg-slate-100">
+      <div id="invoicePreviewContent" class="bg-white mx-auto w-full max-w-[560px] shadow-md rounded-xl p-5 text-slate-900">
+      </div>
+    </div>
+
+    <div class="p-4 border-t bg-white grid grid-cols-3 gap-2">
+      <button onclick="printPreviewedInvoice('80')" class="btn bg-teal-600 hover:bg-teal-700 text-white rounded-xl py-3 font-black text-xs">🖨️ طباعة 80mm</button>
+      <button onclick="printPreviewedInvoice('A4')" class="btn bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3 font-black text-xs">📄 طباعة A4</button>
+      <button onclick="closeInvoicePreview()" class="btn bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl py-3 font-black text-xs">إغلاق</button>
+    </div>
+  </div>
+</div>
+
 <div id="toastWrap" class="fixed bottom-5 left-5 z-[80] space-y-2 pointer-events-none"></div>
 
 <!-- الفاتورة المطبوعة -->
@@ -225,23 +289,27 @@ const inventory=[
 
 let cart=[], category="الكل";
 const KEY="pharmaOrders_Abdulrahman";
+const AUTH_KEY="pharmaAuth_Abdulrahman";
 let orders=JSON.parse(localStorage.getItem(KEY)||"[]");
 
 // إدارة تسجيل الدخول
 function handleLogin(e){
   e.preventDefault();
   const u = document.getElementById("loginUser").value.trim();
-  const p = document.getElementById("loginPass").value.trim();
+  const p = document.getElementById("loginPass").value;
   if(u === "admin" && p === "1234"){
-    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem(AUTH_KEY, "1");
+    document.getElementById("loginError").classList.add("hidden");
     checkAuth();
-  } else {
+    toast("تم تسجيل الدخول بنجاح");
+  }else{
     document.getElementById("loginError").classList.remove("hidden");
+    document.getElementById("loginPass").value="";
   }
 }
 
 function checkAuth(){
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const isLoggedIn = localStorage.getItem(AUTH_KEY) === "1";
   if(isLoggedIn){
     document.getElementById("loginScreen").classList.add("hidden");
     document.getElementById("appScreen").classList.remove("hidden");
@@ -252,7 +320,9 @@ function checkAuth(){
 }
 
 function logout(){
-  localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem(AUTH_KEY);
+  cart=[];
+  renderCart();
   checkAuth();
 }
 
@@ -412,6 +482,94 @@ function renderOrders(){
   </div>`).join("")||`<div class="text-center py-10 text-slate-400 font-bold">لا توجد فواتير مسجلة</div>`;
 }
 
+let previewSaleData=null;
+
+function buildInvoicePreview(sale){
+  previewSaleData=sale;
+  const items=sale.items.map((x,i)=>`
+    <tr style="border-bottom:1px solid #e5e7eb">
+      <td style="padding:7px 4px;text-align:center">${i+1}</td>
+      <td style="padding:7px 4px;font-weight:800">
+        ${x.name}
+        <div style="font-size:10px;color:#64748b;font-weight:600">${x.unitLabel}</div>
+      </td>
+      <td style="padding:7px 4px;text-align:center">${x.qty}</td>
+      <td style="padding:7px 4px;text-align:left">${money(x.price)}</td>
+      <td style="padding:7px 4px;text-align:left;font-weight:800">${money(x.price*x.qty)}</td>
+    </tr>`).join("");
+
+  document.getElementById("invoicePreviewContent").innerHTML=`
+    <div class="text-center border-b pb-4 mb-4">
+      <div class="text-2xl">⚕️</div>
+      <div class="text-xl font-black mt-1">صيدلية د. عبدالرحمن ابوليله</div>
+      <div class="text-xs text-slate-500 mt-1">خدمات صيدلانية ورعاية متكاملة</div>
+    </div>
+
+    <div class="flex justify-between gap-3 text-xs font-bold mb-3">
+      <div>فاتورة #${sale.id}</div>
+      <div>${new Date(sale.date).toLocaleString("ar-EG")}</div>
+    </div>
+
+    <div class="bg-slate-50 rounded-xl p-3 text-xs mb-4">
+      <div><b>اسم العميل:</b> ${sale.customer}</div>
+      ${sale.phone?`<div class="mt-1"><b>الهاتف:</b> ${sale.phone}</div>`:""}
+    </div>
+
+    <div class="overflow-x-auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="border-bottom:2px solid #0f172a">
+            <th style="padding:7px 4px">#</th>
+            <th style="padding:7px 4px;text-align:right">الصنف</th>
+            <th style="padding:7px 4px">العدد</th>
+            <th style="padding:7px 4px;text-align:left">السعر</th>
+            <th style="padding:7px 4px;text-align:left">الإجمالي</th>
+          </tr>
+        </thead>
+        <tbody>${items}</tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 pt-4 border-t-2 border-slate-900 flex justify-between text-lg font-black">
+      <span>الإجمالي</span>
+      <span class="text-teal-700">${money(sale.total)}</span>
+    </div>
+
+    <div class="text-center text-[11px] text-slate-500 mt-5 pt-4 border-t border-dashed">
+      شكراً لزيارتكم ❤️
+    </div>
+  `;
+}
+
+function openInvoicePreview(sale){
+  buildInvoicePreview(sale);
+  const m=document.getElementById("invoicePreviewModal");
+  m.classList.remove("hidden");
+  m.classList.add("flex");
+}
+
+function closeInvoicePreview(){
+  const m=document.getElementById("invoicePreviewModal");
+  m.classList.add("hidden");
+  m.classList.remove("flex");
+}
+
+function previewSaved(id){
+  const sale=orders.find(o=>o.id===id);
+  if(sale)openInvoicePreview(sale);
+}
+
+function previewCurrentInvoice(){
+  const sale=saleObject();
+  if(sale)openInvoicePreview(sale);
+}
+
+function printPreviewedInvoice(mode){
+  if(!previewSaleData)return;
+  closeInvoicePreview();
+  printInvoice(previewSaleData,mode);
+}
+
 function printSaved(id,mode){let sale=orders.find(o=>o.id===id);if(sale)printInvoice(sale,mode)}
 function clearOrders(){if(!confirm("تحذير: سيتم حذف جميع الفواتير المحفوظة. هل أنت متأكد؟"))return;orders=[];saveOrders();renderOrders();toast("تم حذف كافة الفواتير")}
 function exportOrders(){let blob=new Blob([JSON.stringify(orders,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="abulila-pharmacy-orders.json";a.click();URL.revokeObjectURL(a.href)}
@@ -426,8 +584,8 @@ window.onafterprint=()=>{
 };
 
 // التشغيل الابتدائي
-checkAuth();
 saveOrders();
+checkAuth();
 renderCategories();
 renderProducts();
 renderCart();
