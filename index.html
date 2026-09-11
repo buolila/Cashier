@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>صيدلية د. محمد حسن سرحان - نظام الكاشير والإدارة</title>
+<title>صيدلية د. عبدالرحمن ابوليله - نظام الكاشير والإدارة</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -28,7 +28,7 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
   .print-area, .print-area *{visibility:visible!important}
   .print-area{position:absolute!important;left:0!important;top:0!important;width:100%!important;background:#fff!important;color:#000!important;padding:0!important;margin:0!important}
   
-  /* فاتورة حرارية 80 مم ممتازة لطباعة الإيصالات */
+  /* فاتورة حرارية 80 مم */
   body.print80 .print-area{width:80mm!important;max-width:80mm!important;padding:3mm!important;font-size:11px!important;line-height:1.2;font-family:'Cairo',sans-serif}
   body.print80 .print-area h1{font-size:16px!important;font-weight:900!important;margin-bottom:2px!important}
   body.print80 .print-area table{font-size:10px!important}
@@ -46,13 +46,21 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
   <div class="card w-full max-w-md p-6 bg-white rounded-3xl shadow-2xl">
     <div class="text-center mb-6">
       <div class="w-16 h-16 bg-teal-600 text-white rounded-2xl mx-auto grid place-items-center text-3xl mb-3 shadow-lg">⚕️</div>
-      <h2 class="text-2xl font-black text-slate-800">صيدلية د. محمد حسن سرحان</h2>
-      <p class="text-xs text-teal-700 font-bold mt-1">مستحضرات التجميل • مستلزمات الحضانة والرعاية المركزة</p>
+      <h2 class="text-2xl font-black text-slate-800">صيدلية د. عبدالرحمن ابوليله</h2>
+      <p class="text-xs text-teal-700 font-bold mt-1">خدمة فريدة للرعاية الصحية والصيدلانية</p>
     </div>
+    
+    <!-- عرض بيانات المستخدم الافتراضية للاسترشاد -->
+    <div class="bg-teal-50 border border-teal-200 rounded-2xl p-3 mb-5 text-xs text-teal-900 space-y-1">
+      <div class="font-bold border-b border-teal-200 pb-1 mb-1 text-teal-800">🔑 بيانات تسجيل الدخول الافتراضية:</div>
+      <div class="flex justify-between"><span>اسم المستخدم:</span> <code class="bg-teal-100 px-2 py-0.5 rounded font-mono font-bold">admin</code></div>
+      <div class="flex justify-between"><span>كلمة المرور:</span> <code class="bg-teal-100 px-2 py-0.5 rounded font-mono font-bold">1234</code></div>
+    </div>
+
     <form onsubmit="handleLogin(event)" class="space-y-4">
       <div>
         <label class="block text-xs font-bold text-slate-700 mb-1">اسم المستخدم</label>
-        <input id="loginUser" type="text" required class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-teal-500" placeholder="admin">
+        <input id="loginUser" type="text" required class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-teal-500" placeholder="أدخل اسم المستخدم">
       </div>
       <div>
         <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور</label>
@@ -70,8 +78,8 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
     <div class="flex items-center gap-3">
       <div class="w-12 h-12 rounded-2xl bg-teal-600 grid place-items-center text-2xl shadow-inner">⚕️</div>
       <div>
-        <h1 class="font-black text-xl">صيدلية د. محمد حسن سرحان</h1>
-        <p class="text-xs text-teal-400 font-medium">مستحضرات التجميل ومستلزمات الحضانة والرعاية المركزة</p>
+        <h1 class="font-black text-xl">صيدلية د. عبدالرحمن ابوليله</h1>
+        <p class="text-xs text-teal-400 font-medium">نظام المبيعات وإدارة الدواء المتكامل</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -161,14 +169,12 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
 
 <div id="toastWrap" class="fixed bottom-5 left-5 z-[80] space-y-2 pointer-events-none"></div>
 
-<!-- الفاتورة المطبوعة (تصميم يطابق بيانات الكارت) -->
+<!-- الفاتورة المطبوعة -->
 <div class="print-area hidden">
   <div style="text-align:center; border-bottom:2px solid #000; padding-bottom:8px; margin-bottom:8px;">
-    <h1 style="margin:0; font-size:18px; font-weight:900;">صيدلية د. محمد حسن سرحان</h1>
-    <div style="font-size:11px; font-weight:bold; margin-top:2px;">مستحضرات التجميل</div>
-    <div style="font-size:10px; font-weight:bold;">مستلزمات الحضانة والرعاية المركزة</div>
-    <div style="font-size:10px; margin-top:3px;">الحسينية - شارع المستشفى أمام مسجد أبو صفوان</div>
-    <div style="font-size:11px; font-weight:900; margin-top:2px;">تلك: 01114575758</div>
+    <h1 style="margin:0; font-size:18px; font-weight:900;">صيدلية د. عبدالرحمن ابوليله</h1>
+    <div style="font-size:11px; font-weight:bold; margin-top:2px;">خدمات صيدلانية ورعاية متكاملة</div>
+    <div style="font-size:10px; margin-top:3px;">العنوان: الفرع الرئيسي</div>
   </div>
   
   <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:bold; margin-bottom:6px;">
@@ -201,7 +207,7 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
   
   <div style="text-align:center; border-top:1px dashed #000; margin-top:12px; padding-top:8px; font-size:10px; font-weight:bold;">
     مع تمنياتنا لكم بالشفاء العاجل ❤️<br>
-    شكراً لزيارتكم صيدلية د. محمد حسن سرحان
+    شكراً لزيارتكم صيدلية د. عبدالرحمن ابوليله
   </div>
 </div>
 
@@ -214,13 +220,11 @@ const inventory=[
 {id:105,name:"كونجستال أقراص",active:"باراسيتامول + كلورفينيرامين",cat:"مسكنات",box:36,strip:12,barcode:"6221005",expiry:"2026-12"},
 {id:106,name:"واقي شمس دراجون",active:"Sunscreen SPF 50+",cat:"مستحضرات تجميل",box:150,strip:150,barcode:"6221006",expiry:"2027-08"},
 {id:107,name:"محلول ملحي معقم",active:"Normal Saline 0.9%",cat:"مستلزمات طبية",box:25,strip:25,barcode:"6221007",expiry:"2028-02"},
-{id:108,name:"أوميبرازول 20 مجم",active:"Omeprazole",cat:"معدة",box:75,strip:25,barcode:"6221008",expiry:"2027-10"},
-{id:109,name:"كانيولا أطفال (صفراء)",active:"IV Cannula Pediatric",cat:"رعاية وحضانات",box:15,strip:15,barcode:"6221009",expiry:"2027-06"},
-{id:110,name:"شامبو بيبي جونسون",active:"Baby Shampoo",cat:"مستحضرات تجميل",box:85,strip:85,barcode:"6221010",expiry:"2028-01"}
+{id:108,name:"أوميبرازول 20 مجم",active:"Omeprazole",cat:"معدة",box:75,strip:25,barcode:"6221008",expiry:"2027-10"}
 ];
 
 let cart=[], category="الكل";
-const KEY="pharmaOrders_Sarhan";
+const KEY="pharmaOrders_Abdulrahman";
 let orders=JSON.parse(localStorage.getItem(KEY)||"[]");
 
 // إدارة تسجيل الدخول
@@ -330,7 +334,7 @@ function clearCart(){
   renderCart();
 }
 
-function newInvoiceNo(){return "MHS-"+new Date().getFullYear()+"-"+String((orders.length?Math.max(...orders.map(o=>Number(o.idNum)||0)):1000)+1)}
+function newInvoiceNo(){return "ABULILA-"+new Date().getFullYear()+"-"+String((orders.length?Math.max(...orders.map(o=>Number(o.idNum)||0)):1000)+1)}
 
 function saleObject(){
   let name=document.getElementById("customerName").value.trim();
@@ -410,7 +414,7 @@ function renderOrders(){
 
 function printSaved(id,mode){let sale=orders.find(o=>o.id===id);if(sale)printInvoice(sale,mode)}
 function clearOrders(){if(!confirm("تحذير: سيتم حذف جميع الفواتير المحفوظة. هل أنت متأكد؟"))return;orders=[];saveOrders();renderOrders();toast("تم حذف كافة الفواتير")}
-function exportOrders(){let blob=new Blob([JSON.stringify(orders,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="sarhan-pharmacy-orders.json";a.click();URL.revokeObjectURL(a.href)}
+function exportOrders(){let blob=new Blob([JSON.stringify(orders,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="abulila-pharmacy-orders.json";a.click();URL.revokeObjectURL(a.href)}
 function scanBarcode(){let q=prompt("يرجى إدخال/مسح كود الباركود:");if(!q)return;let x=inventory.find(a=>a.barcode===q.trim());if(!x){toast("عذراً، هذا الباركود غير مدرج","warn");return}add(x.id,"box")}
 
 setInterval(()=>document.getElementById("clock").textContent=new Date().toLocaleString("ar-EG",{weekday:"short",year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"}),1000);
