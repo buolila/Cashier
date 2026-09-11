@@ -22,7 +22,7 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
 .toast{animation:toast .25s ease}
 @keyframes toast{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
 
-/* إعدادات وتنسيق مساحة الطباعة */
+/* إعدادات وتنسيق مساحة الطباعة المصغرة */
 @media print{
   @page { margin: 0; }
   html, body{
@@ -43,39 +43,39 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
     box-sizing:border-box!important;
   }
 
-  /* طباعة حرارية: عرض الورقة نفسه، بدون صفحة A4 حول الفاتورة */
+  /* طباعة حرارية 80mm مصغرة */
   body.print80 .print-area{
-    width:80mm!important;
-    max-width:80mm!important;
-    padding:2.5mm!important;
-    font-size:9px!important;
-    line-height:1.15!important;
+    width:76mm!important;
+    max-width:76mm!important;
+    padding:1.5mm!important;
+    font-size:7.5pt!important;
+    line-height:1.1!important;
     font-family:'Cairo',Arial,sans-serif!important;
   }
   body.print80 .print-area h1{
-    font-size:15px!important;
-    margin:0 0 2px!important;
+    font-size:11pt!important;
+    margin:0 0 1px!important;
   }
-  body.print80 .print-area table{font-size:8.5px!important}
+  body.print80 .print-area table{font-size:7pt!important}
   body.print80 .print-area th,
-  body.print80 .print-area td{padding:2px 1px!important}
+  body.print80 .print-area td{padding:1px 0px!important}
 
-  /* A4: محتوى الفاتورة يملأ الصفحة من أعلى وبحجم مناسب */
+  /* طباعة A4 مصغرة */
   body.printA4 .print-area{
     width:210mm!important;
     min-height:0!important;
-    padding:8mm!important;
-    font-size:12px!important;
-    line-height:1.3!important;
+    padding:5mm!important;
+    font-size:9.5pt!important;
+    line-height:1.2!important;
     font-family:'Cairo',Arial,sans-serif!important;
   }
   body.printA4 .print-area h1{
-    font-size:22px!important;
-    margin:0 0 3px!important;
+    font-size:16pt!important;
+    margin:0 0 2px!important;
   }
-  body.printA4 .print-area table{font-size:11px!important}
+  body.printA4 .print-area table{font-size:8.5pt!important}
   body.printA4 .print-area th,
-  body.printA4 .print-area td{padding:4px 3px!important}
+  body.printA4 .print-area td{padding:2px 2px!important}
 }
 </style>
 </head>
@@ -90,7 +90,6 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
       <p class="text-xs text-teal-700 font-bold mt-1">خدمة فريدة للرعاية الصحية والصيدلانية</p>
     </div>
     
-    <!-- عرض بيانات المستخدم الافتراضية للاسترشاد -->
     <div class="bg-teal-50 border border-teal-200 rounded-2xl p-3 mb-5 text-xs text-teal-900 space-y-1">
       <div class="font-bold border-b border-teal-200 pb-1 mb-1 text-teal-800">🔑 بيانات تسجيل الدخول الافتراضية:</div>
       <div class="flex justify-between"><span>اسم المستخدم:</span> <code class="bg-teal-100 px-2 py-0.5 rounded font-mono font-bold">admin</code></div>
@@ -235,41 +234,41 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
 
 <!-- الفاتورة المطبوعة -->
 <div class="print-area hidden">
-  <div style="text-align:center; border-bottom:2px solid #000; padding-bottom:8px; margin-bottom:8px;">
-    <h1 style="margin:0; font-size:18px; font-weight:900;">صيدلية د. عبدالرحمن ابوليله</h1>
-    <div style="font-size:11px; font-weight:bold; margin-top:2px;">خدمات صيدلانية ورعاية متكاملة</div>
-    <div style="font-size:10px; margin-top:3px;">العنوان: الفرع الرئيسي</div>
+  <div style="text-align:center; border-bottom:1.5px solid #000; padding-bottom:4px; margin-bottom:4px;">
+    <h1 style="margin:0; font-weight:900;">صيدلية د. عبدالرحمن ابوليله</h1>
+    <div style="font-size:8pt; font-weight:bold; margin-top:1px;">خدمات صيدلانية ورعاية متكاملة</div>
+    <div style="font-size:7.5pt; margin-top:1px;">العنوان: الفرع الرئيسي</div>
   </div>
   
-  <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:bold; margin-bottom:6px;">
+  <div style="display:flex; justify-space-between; font-size:7.5pt; font-weight:bold; margin-bottom:4px;">
     <span>فاتورة: #<span id="pNo"></span></span>
     <span>التاريخ: <span id="pDate"></span></span>
   </div>
   
-  <div style="font-size:10px; margin-bottom:8px; border-bottom:1px solid #ddd; padding-bottom:4px;">
+  <div style="font-size:7.5pt; margin-bottom:4px; border-bottom:1px solid #ddd; padding-bottom:2px;">
     <b>العميل:</b> <span id="pCustomer"></span> | <b>هاتف:</b> <span id="pPhone"></span>
   </div>
   
-  <table style="width:100%; border-collapse:collapse; text-align:right; font-size:10px; margin-bottom:8px;">
+  <table style="width:100%; border-collapse:collapse; text-align:right; margin-bottom:4px;">
     <thead>
       <tr style="border-bottom:1px solid #000;">
-        <th style="padding:3px 2px;">#</th>
-        <th style="padding:3px 2px;">الصنف</th>
-        <th style="padding:3px 2px; text-align:center;">الوحدة</th>
-        <th style="padding:3px 2px; text-align:center;">العدد</th>
-        <th style="padding:3px 2px; text-align:left;">السعر</th>
-        <th style="padding:3px 2px; text-align:left;">الإجمالي</th>
+        <th style="padding:2px 1px;">#</th>
+        <th style="padding:2px 1px;">الصنف</th>
+        <th style="padding:2px 1px; text-align:center;">الوحدة</th>
+        <th style="padding:2px 1px; text-align:center;">العدد</th>
+        <th style="padding:2px 1px; text-align:left;">السعر</th>
+        <th style="padding:2px 1px; text-align:left;">الإجمالي</th>
       </tr>
     </thead>
     <tbody id="pItems"></tbody>
   </table>
   
-  <div style="border-top:2px solid #000; padding-top:6px; display:flex; justify-content:space-between; font-size:14px; font-weight:900;">
+  <div style="border-top:1.5px solid #000; padding-top:3px; display:flex; justify-content:space-between; font-size:10pt; font-weight:900;">
     <span>المبلغ الإجمالي:</span>
     <span id="pTotal"></span>
   </div>
   
-  <div style="text-align:center; border-top:1px dashed #000; margin-top:12px; padding-top:8px; font-size:10px; font-weight:bold;">
+  <div style="text-align:center; border-top:1px dashed #000; margin-top:6px; padding-top:4px; font-size:7.5pt; font-weight:bold;">
     مع تمنياتنا لكم بالشفاء العاجل ❤️<br>
     شكراً لزيارتكم صيدلية د. عبدالرحمن ابوليله
   </div>
@@ -442,12 +441,12 @@ function printInvoice(sale,mode){
   document.getElementById("pTotal").textContent=money(sale.total);
   document.getElementById("pItems").innerHTML=sale.items.map((x,i)=>`
     <tr style="border-bottom:1px solid #eee;">
-      <td style="padding:3px 2px; text-align:center;">${i+1}</td>
-      <td style="padding:3px 2px; font-weight:bold;">${x.name}</td>
-      <td style="padding:3px 2px; text-align:center;">${x.unitLabel}</td>
-      <td style="padding:3px 2px; text-align:center;">${x.qty}</td>
-      <td style="padding:3px 2px; text-align:left;">${money(x.price)}</td>
-      <td style="padding:3px 2px; text-align:left; font-weight:bold;">${money(x.price*x.qty)}</td>
+      <td style="padding:2px 1px; text-align:center;">${i+1}</td>
+      <td style="padding:2px 1px; font-weight:bold;">${x.name}</td>
+      <td style="padding:2px 1px; text-align:center;">${x.unitLabel}</td>
+      <td style="padding:2px 1px; text-align:center;">${x.qty}</td>
+      <td style="padding:2px 1px; text-align:left;">${money(x.price)}</td>
+      <td style="padding:2px 1px; text-align:left; font-weight:bold;">${money(x.price*x.qty)}</td>
     </tr>`).join("");
     
   document.body.classList.remove("print80","printA4");
