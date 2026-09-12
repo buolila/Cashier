@@ -22,7 +22,7 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
 .toast{animation:toast .25s ease}
 @keyframes toast{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
 
-/* إعدادات وتنسيق مساحة الطباعة المصغرة المدمجة (Compact 80mm Thermal Receipt) */
+/* إعدادات وتنسيق مساحة الطباعة على ورق حراري 80مم (Thermal Receipt 80mm) */
 @media print{
   @page {
     size: 80mm auto;
@@ -43,14 +43,14 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
     right:0!important;
     left:0!important;
     margin:0 auto!important;
-    width:72mm!important;
+    width:80mm!important;
     max-width:80mm!important;
-    padding:1mm!important;
+    padding:2mm 3mm!important;
     background:#fff!important;
     color:#000!important;
     box-sizing:border-box!important;
-    font-size:7pt!important;
-    line-height:1.1!important;
+    font-size:8pt!important;
+    line-height:1.35!important;
     font-family:'Cairo',Arial,sans-serif!important;
   }
 }
@@ -153,7 +153,7 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
           <div class="flex justify-between text-sm mb-2 text-slate-600 font-semibold"><span>إجمالي الأصناف:</span><b id="itemsCount" class="text-slate-900">0</b></div>
           <div class="flex justify-between items-center"><span class="font-black text-slate-800">المبلغ الإجمالي:</span><strong id="total" class="text-2xl text-teal-700 font-black">0.00 ج.م</strong></div>
           <div class="grid grid-cols-2 gap-2 mt-4">
-            <button onclick="completeSale()" class="btn bg-teal-600 hover:bg-teal-700 text-white py-3.5 rounded-xl font-black text-xs col-span-2 shadow-md">🖨️ حفظ وطباعة الفاتورة (مدمجة)</button>
+            <button onclick="completeSale()" class="btn bg-teal-600 hover:bg-teal-700 text-white py-3.5 rounded-xl font-black text-xs col-span-2 shadow-md">🖨️ حفظ وطباعة الفاتورة (80مم)</button>
           </div>
           <button onclick="saveSale(false)" class="btn w-full mt-2 bg-white hover:bg-slate-100 border border-slate-200 py-2.5 rounded-xl font-bold text-xs text-slate-700">💾 حفظ الطلب بدون طباعة</button>
         </div>
@@ -184,17 +184,17 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
 
 <!-- معاينة الفاتورة قبل الطباعة -->
 <div id="invoicePreviewModal" class="hidden fixed inset-0 z-[110] modal-bg p-3 md:p-5 items-center justify-center">
-  <div class="w-full max-w-[360px] bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[94vh] flex flex-col">
+  <div class="w-full max-w-[380px] bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[94vh] flex flex-col">
     <div class="p-3 bg-slate-950 text-white flex items-center justify-between">
       <div>
         <h2 class="font-black text-xs">🧾 معاينة الفاتورة</h2>
-        <p class="text-[9px] text-slate-300">مساحة مدمجة للطباعة</p>
+        <p class="text-[9px] text-slate-300">مقاس ورق حراري 80 مم</p>
       </div>
       <button onclick="closeInvoicePreview()" class="btn w-7 h-7 rounded-lg bg-white/10 hover:bg-white/15 text-xs">✕</button>
     </div>
 
     <div class="p-3 overflow-y-auto bg-slate-100 flex justify-center">
-      <div id="invoicePreviewContent" class="bg-white w-[72mm] max-w-[72mm] shadow-md rounded p-2 text-slate-900 font-sans text-[10px]">
+      <div id="invoicePreviewContent" class="bg-white w-[80mm] max-w-[80mm] shadow-md rounded p-0 text-slate-900 font-sans text-[10px]">
       </div>
     </div>
 
@@ -207,93 +207,116 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
 
 <div id="toastWrap" class="fixed bottom-5 left-5 z-[80] space-y-2 pointer-events-none"></div>
 
-<!-- الفاتورة المطبوعة المصغرة (Compact Thermal Receipt) -->
+<!-- الفاتورة المطبوعة على ورق حراري 80مم (Thermal Receipt 80mm) -->
 <div class="print-area hidden" dir="rtl">
   <style>
     .receipt-80 {
-      width: 72mm;
+      width: 80mm;
       max-width: 80mm;
       margin: 0 auto;
       padding: 0;
       box-sizing: border-box;
       font-family: 'Cairo', sans-serif;
-      font-size: 7.5pt;
+      font-size: 8pt;
       color: #000;
       background: #fff;
     }
 
     .receipt-header {
       text-align: center;
-      border-bottom: 1px dashed #000;
-      padding-bottom: 2px;
+      border-bottom: 1.5px dashed #000;
+      padding-bottom: 4px;
+      margin-bottom: 4px;
+    }
+
+    .receipt-header .receipt-icon{
+      font-size: 14pt;
+      line-height: 1;
       margin-bottom: 2px;
     }
 
     .receipt-header h1 {
       margin: 0;
-      font-size: 9.5pt;
+      font-size: 11pt;
       font-weight: 900;
-      line-height: 1.1;
+      line-height: 1.25;
+    }
+
+    .receipt-header .receipt-sub{
+      font-size: 7.5pt;
+      font-weight: 700;
+      margin-top: 2px;
+      color: #1f2937;
+    }
+
+    .receipt-header .receipt-addr{
+      font-size: 7pt;
+      color: #475569;
+      margin-top: 1px;
     }
 
     .receipt-info {
-      font-size: 7pt;
-      margin-bottom: 2px;
-      border-bottom: 1px dashed #000;
-      padding-bottom: 2px;
+      font-size: 7.5pt;
+      margin-bottom: 4px;
+      border-bottom: 1.5px dashed #000;
+      padding-bottom: 4px;
     }
 
     .receipt-info div {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 1px;
+      gap: 8px;
+      margin-bottom: 2px;
     }
 
     .receipt-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 2px;
-      font-size: 7pt;
+      margin-bottom: 4px;
+      font-size: 7.5pt;
     }
 
     .receipt-table th {
-      border-bottom: 1px solid #000;
-      padding: 1px 0;
+      border-bottom: 1.5px solid #000;
+      padding: 3px 0;
       font-weight: 800;
     }
 
     .receipt-table td {
-      padding: 1px 0;
-      border-bottom: 1px solid #eee;
+      padding: 3px 0;
+      border-bottom: 1px solid #e2e2e2;
+      vertical-align: top;
     }
 
     .receipt-total {
-      border-top: 1px solid #000;
-      padding-top: 2px;
-      margin-top: 1px;
+      border-top: 1.5px solid #000;
+      border-bottom: 1.5px solid #000;
+      padding: 4px 0;
+      margin-top: 2px;
       display: flex;
       justify-content: space-between;
-      font-size: 8.5pt;
+      font-size: 10pt;
       font-weight: 900;
     }
 
     .receipt-footer {
       text-align: center;
-      border-top: 1px dashed #000;
-      margin-top: 3px;
-      padding-top: 2px;
-      font-size: 6.5pt;
+      border-top: 1.5px dashed #000;
+      margin-top: 6px;
+      padding-top: 4px;
+      font-size: 7pt;
       font-weight: bold;
-      line-height: 1.2;
+      line-height: 1.5;
     }
   </style>
 
   <div class="receipt-80">
     <!-- رأس الفاتورة -->
     <div class="receipt-header">
+      <div class="receipt-icon">⚕️</div>
       <h1>صيدلية د. عبدالرحمن ابوليله</h1>
-      <div style="font-weight: bold; font-size: 7pt; margin-top: 1px;">خدمات صيدلانية ورعاية متكاملة</div>
-      <div style="font-size: 6.5pt;">العنوان: الفرع الرئيسي</div>
+      <div class="receipt-sub">خدمات صيدلانية ورعاية متكاملة</div>
+      <div class="receipt-addr">العنوان: الفرع الرئيسي</div>
     </div>
 
     <!-- بيانات الفاتورة والعميل -->
@@ -308,10 +331,10 @@ body{font-family:'Cairo',sans-serif;background:#f4f7fb;color:#172033}
     <table class="receipt-table">
       <thead>
         <tr>
-          <th style="text-align: right; width: 45%;">الصنف</th>
-          <th style="text-align: center; width: 15%;">الوحدة</th>
+          <th style="text-align: right; width: 42%;">الصنف</th>
+          <th style="text-align: center; width: 16%;">الوحدة</th>
           <th style="text-align: center; width: 12%;">العدد</th>
-          <th style="text-align: left; width: 28%;">الإجمالي</th>
+          <th style="text-align: left; width: 30%;">الإجمالي</th>
         </tr>
       </thead>
       <tbody id="pItems">
@@ -546,45 +569,49 @@ let previewSaleData=null;
 function buildInvoicePreview(sale){
   previewSaleData=sale;
   const items=sale.items.map(x=>`
-    <tr style="border-bottom:1px solid #eee">
-      <td style="padding:2px 1px;font-weight:bold">${x.name}</td>
-      <td style="padding:2px 1px;text-align:center">${x.unitLabel}</td>
-      <td style="padding:2px 1px;text-align:center">${x.qty}</td>
-      <td style="padding:2px 1px;text-align:left;font-weight:bold">${money(x.price*x.qty)}</td>
+    <tr style="border-bottom:1px solid #e2e2e2">
+      <td style="padding:4px 1px;font-weight:bold">${x.name}</td>
+      <td style="padding:4px 1px;text-align:center">${x.unitLabel}</td>
+      <td style="padding:4px 1px;text-align:center">${x.qty}</td>
+      <td style="padding:4px 1px;text-align:left;font-weight:bold">${money(x.price*x.qty)}</td>
     </tr>`).join("");
 
   document.getElementById("invoicePreviewContent").innerHTML=`
-    <div style="text-align:center; border-bottom:1px dashed #000; padding-bottom:3px; margin-bottom:3px">
-      <div style="font-size:11px; font-weight:900">صيدلية د. عبدالرحمن ابوليله</div>
-      <div style="font-size:8px; color:#475569">خدمات صيدلانية ورعاية متكاملة</div>
+    <div style="padding:10px 12px 8px;">
+    <div style="text-align:center; border-bottom:1.5px dashed #000; padding-bottom:6px; margin-bottom:6px">
+      <div style="font-size:16px; line-height:1">⚕️</div>
+      <div style="font-size:13px; font-weight:900; margin-top:3px">صيدلية د. عبدالرحمن ابوليله</div>
+      <div style="font-size:9px; font-weight:700; color:#1f2937; margin-top:2px">خدمات صيدلانية ورعاية متكاملة</div>
+      <div style="font-size:8px; color:#64748b; margin-top:1px">العنوان: الفرع الرئيسي</div>
     </div>
 
-    <div style="font-size:8px; border-bottom:1px dashed #000; padding-bottom:3px; margin-bottom:3px">
-      <div style="display:flex; justify-content:space-between"><span>الفاتورة:</span> <b>#${sale.id}</b></div>
-      <div style="display:flex; justify-content:space-between"><span>التاريخ:</span> <span>${new Date(sale.date).toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"})}</span></div>
-      <div style="display:flex; justify-content:space-between"><span>العميل:</span> <b>${sale.customer}</b></div>
+    <div style="font-size:9px; border-bottom:1.5px dashed #000; padding-bottom:6px; margin-bottom:6px">
+      <div style="display:flex; justify-content:space-between; margin-bottom:2px"><span>رقم الفاتورة:</span> <b>#${sale.id}</b></div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:2px"><span>التاريخ والوقت:</span> <span>${new Date(sale.date).toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"})}</span></div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:2px"><span>العميل:</span> <b>${sale.customer}</b></div>
       ${sale.phone?`<div style="display:flex; justify-content:space-between"><span>الهاتف:</span> <span>${sale.phone}</span></div>`:""}
     </div>
 
-    <table style="width:100%; border-collapse:collapse; font-size:8px">
+    <table style="width:100%; border-collapse:collapse; font-size:9px">
       <thead>
-        <tr style="border-bottom:1px solid #000">
-          <th style="text-align:right">الصنف</th>
-          <th style="text-align:center">الوحدة</th>
-          <th style="text-align:center">العدد</th>
-          <th style="text-align:left">الإجمالي</th>
+        <tr style="border-bottom:1.5px solid #000">
+          <th style="text-align:right; padding:3px 0;">الصنف</th>
+          <th style="text-align:center; padding:3px 0;">الوحدة</th>
+          <th style="text-align:center; padding:3px 0;">العدد</th>
+          <th style="text-align:left; padding:3px 0;">الإجمالي</th>
         </tr>
       </thead>
       <tbody>${items}</tbody>
     </table>
 
-    <div style="margin-top:4px; padding-top:2px; border-top:1px solid #000; display:flex; justify-content:space-between; font-size:10px; font-weight:900">
+    <div style="margin-top:4px; padding:6px 0; border-top:1.5px solid #000; border-bottom:1.5px solid #000; display:flex; justify-content:space-between; font-size:12px; font-weight:900">
       <span>الإجمالي:</span>
       <span>${money(sale.total)}</span>
     </div>
 
-    <div style="text-align:center; font-size:7.5px; color:#64748b; margin-top:5px; padding-top:3px; border-top:1px dashed #000">
-      مع تمنياتنا لكم بالشفاء العاجل ❤️
+    <div style="text-align:center; font-size:8.5px; color:#334155; font-weight:700; margin-top:8px; padding-top:6px; border-top:1.5px dashed #000; line-height:1.5">
+      مع تمنياتنا لكم بالشفاء العاجل ❤️<br>شكراً لزيارتكم صيدلية د. عبدالرحمن ابوليله
+    </div>
     </div>
   `;
 }
